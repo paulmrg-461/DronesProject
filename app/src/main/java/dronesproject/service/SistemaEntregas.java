@@ -67,37 +67,37 @@ public class SistemaEntregas {
         // Estos valores deberían ser configurables o basados en datos reales.
         int numZonas = Zona.values().length;
         matrizDistancias = new int[numZonas][numZonas];
-        //       NORTE SUR ESTE OESTE CENTRO
+        //       NORTE SUR ORIENTE OCCIDENTE CENTRO
         // NORTE
-        matrizDistancias[Zona.NORTE.ordinal()][Zona.NORTE.ordinal()] = 0;
+        matrizDistancias[Zona.NORTE.ordinal()][Zona.NORTE.ordinal()] = 1;
         matrizDistancias[Zona.NORTE.ordinal()][Zona.SUR.ordinal()] = 10;
-        matrizDistancias[Zona.NORTE.ordinal()][Zona.ESTE.ordinal()] = 5;
-        matrizDistancias[Zona.NORTE.ordinal()][Zona.OESTE.ordinal()] = 7;
+        matrizDistancias[Zona.NORTE.ordinal()][Zona.ORIENTE.ordinal()] = 5;
+        matrizDistancias[Zona.NORTE.ordinal()][Zona.OCCIDENTE.ordinal()] = 7;
         matrizDistancias[Zona.NORTE.ordinal()][Zona.CENTRO.ordinal()] = 3;
         // SUR
         matrizDistancias[Zona.SUR.ordinal()][Zona.NORTE.ordinal()] = 10;
-        matrizDistancias[Zona.SUR.ordinal()][Zona.SUR.ordinal()] = 0;
-        matrizDistancias[Zona.SUR.ordinal()][Zona.ESTE.ordinal()] = 8;
-        matrizDistancias[Zona.SUR.ordinal()][Zona.OESTE.ordinal()] = 6;
+        matrizDistancias[Zona.SUR.ordinal()][Zona.SUR.ordinal()] = 1;
+        matrizDistancias[Zona.SUR.ordinal()][Zona.ORIENTE.ordinal()] = 8;
+        matrizDistancias[Zona.SUR.ordinal()][Zona.OCCIDENTE.ordinal()] = 6;
         matrizDistancias[Zona.SUR.ordinal()][Zona.CENTRO.ordinal()] = 4;
-        // ESTE
-        matrizDistancias[Zona.ESTE.ordinal()][Zona.NORTE.ordinal()] = 5;
-        matrizDistancias[Zona.ESTE.ordinal()][Zona.SUR.ordinal()] = 8;
-        matrizDistancias[Zona.ESTE.ordinal()][Zona.ESTE.ordinal()] = 0;
-        matrizDistancias[Zona.ESTE.ordinal()][Zona.OESTE.ordinal()] = 12;
-        matrizDistancias[Zona.ESTE.ordinal()][Zona.CENTRO.ordinal()] = 2;
-        // OESTE
-        matrizDistancias[Zona.OESTE.ordinal()][Zona.NORTE.ordinal()] = 7;
-        matrizDistancias[Zona.OESTE.ordinal()][Zona.SUR.ordinal()] = 6;
-        matrizDistancias[Zona.OESTE.ordinal()][Zona.ESTE.ordinal()] = 12;
-        matrizDistancias[Zona.OESTE.ordinal()][Zona.OESTE.ordinal()] = 0;
-        matrizDistancias[Zona.OESTE.ordinal()][Zona.CENTRO.ordinal()] = 5;
+        // ORIENTE
+        matrizDistancias[Zona.ORIENTE.ordinal()][Zona.NORTE.ordinal()] = 5;
+        matrizDistancias[Zona.ORIENTE.ordinal()][Zona.SUR.ordinal()] = 8;
+        matrizDistancias[Zona.ORIENTE.ordinal()][Zona.ORIENTE.ordinal()] = 1;
+        matrizDistancias[Zona.ORIENTE.ordinal()][Zona.OCCIDENTE.ordinal()] = 12;
+        matrizDistancias[Zona.ORIENTE.ordinal()][Zona.CENTRO.ordinal()] = 2;
+        // OCCIDENTE
+        matrizDistancias[Zona.OCCIDENTE.ordinal()][Zona.NORTE.ordinal()] = 7;
+        matrizDistancias[Zona.OCCIDENTE.ordinal()][Zona.SUR.ordinal()] = 6;
+        matrizDistancias[Zona.OCCIDENTE.ordinal()][Zona.ORIENTE.ordinal()] = 12;
+        matrizDistancias[Zona.OCCIDENTE.ordinal()][Zona.OCCIDENTE.ordinal()] = 1;
+        matrizDistancias[Zona.OCCIDENTE.ordinal()][Zona.CENTRO.ordinal()] = 5;
         // CENTRO
         matrizDistancias[Zona.CENTRO.ordinal()][Zona.NORTE.ordinal()] = 3;
         matrizDistancias[Zona.CENTRO.ordinal()][Zona.SUR.ordinal()] = 4;
-        matrizDistancias[Zona.CENTRO.ordinal()][Zona.ESTE.ordinal()] = 2;
-        matrizDistancias[Zona.CENTRO.ordinal()][Zona.OESTE.ordinal()] = 5;
-        matrizDistancias[Zona.CENTRO.ordinal()][Zona.CENTRO.ordinal()] = 0;
+        matrizDistancias[Zona.CENTRO.ordinal()][Zona.ORIENTE.ordinal()] = 2;
+        matrizDistancias[Zona.CENTRO.ordinal()][Zona.OCCIDENTE.ordinal()] = 5;
+        matrizDistancias[Zona.CENTRO.ordinal()][Zona.CENTRO.ordinal()] = 1;
     }
 
     public int getDistancia(Zona origen, Zona destino) {
@@ -259,8 +259,8 @@ public class SistemaEntregas {
             if (droneAsignado != null) {
                 if (droneAsignado.cargarPaquete(paqueteAEntregar)) {
                     int distancia = getDistancia(droneAsignado.getZonaActual(), paqueteAEntregar.getZonaDestino());
-                    System.out.println("Drone " + droneAsignado.getId() + " (" + droneAsignado.getClass().getSimpleName() + ", Zona: " + droneAsignado.getZonaActual() + ") asignado para paquete " + paqueteAEntregar.getId() + " (Zona Destino: " + paqueteAEntregar.getZonaDestino() + ", Distancia: " + distancia + " unidades).");
-                    droneAsignado.entregarPaquete();
+                    System.out.println("Drone " + droneAsignado.getId() + " (" + droneAsignado.getClass().getSimpleName() + ", Zona: " + droneAsignado.getZonaActual() + ") asignado para paquete " + paqueteAEntregar.getId() + " (Zona Destino: " + paqueteAEntregar.getZonaDestino() + ", Distancia: " + distancia + " Km).");
+                    droneAsignado.entregarPaquete(distancia);
                 } else {
                     // Esto no debería suceder si encontrarMejorDroneParaPaquete y puedeCargar son consistentes
                     System.out.println("Error: Drone " + droneAsignado.getId() + " no pudo cargar el paquete " + paqueteAEntregar.getId() + ". Paquete devuelto a la cola.");
@@ -358,7 +358,7 @@ public class SistemaEntregas {
     }
 
     public void mostrarEstadoFlota() {
-        System.out.println("\n--- Estado de la Flota ---");
+        System.out.println("\n--- Estado de los Drones ---");
         if (isFlotaVacia()) {
             System.out.println("La flota de drones está vacía.");
             return;

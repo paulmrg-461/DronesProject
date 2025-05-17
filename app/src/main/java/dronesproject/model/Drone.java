@@ -60,12 +60,12 @@ public abstract class Drone {
 
     public abstract boolean cargarPaquete(Paquete paquete);
 
-    public void entregarPaquete() {
+    public void entregarPaquete(int distancia) {
         if (paqueteActual != null) {
             System.out.println("Drone " + id + " (Zona actual: " + zonaActual + ") entregando " + paqueteActual + " en " + paqueteActual.getDireccionDestino() + " (Zona destino: " + paqueteActual.getZonaDestino() + ")");
             Zona zonaDestinoPaquete = paqueteActual.getZonaDestino();
             this.paqueteActual = null;
-            this.nivelBateria -= 10; // Simulación de consumo de batería base
+            this.nivelBateria -= (4 * distancia); // Simulación de consumo de batería base
             // Aquí se podría añadir un consumo de batería adicional basado en la distancia recorrida
             // this.nivelBateria -= calcularConsumoPorDistancia(getDistancia(this.zonaActual, zonaDestinoPaquete));
             this.setZonaActual(zonaDestinoPaquete); // Actualizar la zona del drone a la del paquete entregado

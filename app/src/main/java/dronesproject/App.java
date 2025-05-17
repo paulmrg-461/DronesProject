@@ -72,22 +72,25 @@ public class App {
         // Todos los drones inician en la base (CENTRO por defecto o especificado)
         sistemaEntregas.agregarDrone(new LightDrone("LD001", Zona.CENTRO));
         sistemaEntregas.agregarDrone(new LightDrone("LD002", Zona.CENTRO));
-        sistemaEntregas.agregarDrone(new MediumDrone("MD001", Zona.CENTRO));
-        sistemaEntregas.agregarDrone(new HeavyDrone("HD001", Zona.CENTRO));
+        sistemaEntregas.agregarDrone(new MediumDrone("MD001", Zona.OCCIDENTE));
+        sistemaEntregas.agregarDrone(new MediumDrone("MD002", Zona.CENTRO));
+        sistemaEntregas.agregarDrone(new HeavyDrone("HD001", Zona.ORIENTE));
 
         sistemaEntregas.agregarPedidoEntrega(new Paquete("P001", 3.5, "Tv 7 51N 24", Zona.NORTE));
-        sistemaEntregas.agregarPedidoEntrega(new Paquete("P002", 4.5, "Tv 7 51N 26", Zona.NORTE));
-        sistemaEntregas.agregarPedidoEntrega(new Paquete("P003", 8.0, "Avenida Siempreviva 742", Zona.CENTRO));
-        sistemaEntregas.agregarPedidoEntrega(new Paquete("P004", 15.0, "Campanario local 17", Zona.SUR));
-        sistemaEntregas.agregarPedidoEntrega(new Paquete("P005", 20.0, "Campanario local 18", Zona.SUR));
+        sistemaEntregas.agregarPedidoEntrega(new Paquete("P002", 4.5, "Cll 4 8 20", Zona.SUR));
+        sistemaEntregas.agregarPedidoEntrega(new Paquete("P003", 8.0, "Los Naranjos", Zona.SUR));
+        sistemaEntregas.agregarPedidoEntrega(new Paquete("P004", 17.0, "Avenida Siempreviva 742", Zona.CENTRO));
+        sistemaEntregas.agregarPedidoEntrega(new Paquete("P005", 10.0, "Campanario local 17", Zona.NORTE));
+        sistemaEntregas.agregarPedidoEntrega(new Paquete("P006", 20.0, "La Maria Oriente", Zona.ORIENTE));
+        sistemaEntregas.agregarPedidoEntrega(new Paquete("P007", 20.0, "La Maria Occidente", Zona.OCCIDENTE));
     }
 
     private static void mostrarMenu() {
-        System.out.println("--- Menú Sistema de Entregas de Drones ---");
+        System.out.println("--- Menú Sistema de Entregas TecnoVilla ---");
         System.out.println("1. Agregar Drone");
         System.out.println("2. Agregar Paquete");
         System.out.println("3. Procesar Entregas");
-        System.out.println("4. Mostrar Estado de la Flota");
+        System.out.println("4. Mostrar Estado de los Drones");
         System.out.println("5. Mostrar Mapa de Entrega"); // Nueva opción
         System.out.println("6. Deshacer Última Acción"); // Nueva opción
         System.out.println("7. Salir");

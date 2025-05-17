@@ -6,7 +6,7 @@ package dronesproject.model;
 public enum Zona {
     NORTE,
     SUR,
-    ESTE,
-    OESTE,
+    ORIENTE,
+    OCCIDENTE,
     CENTRO
 }
