@@ -66,10 +66,16 @@ El proyecto aplica varios principios de POO:
 
 El sistema utiliza las siguientes estructuras de datos de la Java Collections Framework:
 
-1.  **`java.util.List` (implementada con `java.util.ArrayList`)**:
-    *   **Uso**: En la clase `SistemaEntregas`, el atributo `flotaDrones` es un `ArrayList<Drone>`.
-    *   **Propósito**: Se utiliza para almacenar y gestionar la colección de todos los drones disponibles en el sistema. `ArrayList` proporciona un acceso rápido a los elementos por índice y un tamaño dinámico.
-    *   **Operaciones Comunes**: Agregar nuevos drones (`flotaDrones.add(drone)`), iterar sobre la flota para encontrar drones disponibles o mostrar su estado.
+1.  **`java.util.Map` (implementada con `java.util.TreeMap`) / `java.util.List` (implementada con `java.util.ArrayList`)**: (Configurable)
+    *   **Uso**: En la clase `SistemaEntregas`, la gestión de la `flotaDrones` puede configurarse para usar `TreeMap<String, Drone>` o `ArrayList<Drone>`. Por defecto, utiliza `TreeMap`.
+    *   **Configuración**: Para cambiar la implementación, modifica la variable `usarTreeMapParaFlota` en la clase `SistemaEntregas.java`:
+        *   `private boolean usarTreeMapParaFlota = true;` (Usa `TreeMap`)
+        *   `private boolean usarTreeMapParaFlota = false;` (Usa `ArrayList`)
+    *   **Propósito**:
+        *   **`TreeMap`**: Almacena y gestiona los drones utilizando el ID del drone como clave. Mantiene los drones ordenados por su ID y proporciona un acceso eficiente (tiempo logarítmico O(log n)) para operaciones como agregar, eliminar y buscar drones por ID.
+        *   **`ArrayList`**: Almacena los drones en el orden en que se agregan. Las operaciones de búsqueda por ID son lineales (O(n)), pero la iteración puede ser ligeramente más rápida en algunos casos. La adición es O(1) amortizado.
+    *   **Operaciones Comunes (Conceptual)**: Agregar nuevos drones, obtener un drone por su ID, eliminar un drone, iterar sobre la flota de drones. La implementación específica de estas operaciones varía internamente según la estructura de datos seleccionada.
+
 
 2.  **`java.util.Queue` (implementada con `java.util.LinkedList`)**:
     *   **Uso**: En la clase `SistemaEntregas`, el atributo `colaDeEntregas` es una `LinkedList<Paquete>` utilizada como una cola (FIFO - First-In, First-Out).
@@ -91,8 +97,10 @@ El sistema utiliza las siguientes estructuras de datos de la Java Collections Fr
     *   **Propósito**: Se utiliza para representar un mapa conceptual del área de entrega en la consola. Cada celda de la matriz representa una posición en el mapa y contiene un símbolo que indica si hay una base, un drone disponible, un drone en entrega o un paquete pendiente.
     *   **Operaciones Comunes**: Inicializar el mapa, limpiar el mapa, actualizar las celdas del mapa según el estado de los drones y paquetes.
 
-*   **`java.util.Map` (ej. `HashMap`, `TreeMap`)**:
-    *   Para un acceso rápido a drones o paquetes por su ID. Por ejemplo, `Map<String, Drone>` permitiría buscar un drone específico por su `id` en tiempo O(1) en promedio con `HashMap`.
+*   **Otras estructuras de árbol (ej. Árboles Binarios de Búsqueda personalizados, Árboles N-arios)**:
+    *   Podrían usarse para representar jerarquías (por ejemplo, una estructura organizativa de drones si tuvieran supervisores o estuvieran agrupados por zonas geográficas complejas).
+    *   Para optimizar búsquedas espaciales si el sistema manejara coordenadas geográficas de forma más detallada (ej. Quadtrees o K-D Trees para encontrar el drone más cercano a un punto).
+    *   `java.util.TreeSet`: Si se necesitara una colección ordenada de elementos únicos sin un valor asociado (a diferencia de `TreeMap`), por ejemplo, para mantener un registro ordenado de IDs de paquetes procesados.
 
 ## Cómo Ejecutar la Aplicación
 
