@@ -76,17 +76,20 @@ El sistema utiliza las siguientes estructuras de datos de la Java Collections Fr
     *   **Propósito**: Se utiliza para gestionar los paquetes pendientes de entrega. Los nuevos pedidos de entrega se añaden al final de la cola (`colaDeEntregas.offer(paquete)`) y se procesan desde el principio de la cola (`colaDeEntregas.poll()`).
     *   **Operaciones Comunes**: Encolar nuevos paquetes, desencolar paquetes para procesarlos, verificar si la cola está vacía.
 
+3.  **`java.util.Stack` (Pila - LIFO)**:
+    *   **Uso**: En la clase `SistemaEntregas`, el atributo `historialAcciones` es un `Stack<AccionHistorial>`.
+    *   **Propósito**: Se utiliza para implementar la funcionalidad de "deshacer" la última acción realizada (agregar drone o agregar paquete). Cada acción relevante se guarda en la pila, permitiendo revertirla.
+    *   **Operaciones Comunes**: Apilar una nueva acción (`historialAcciones.push(accion)`), desapilar la última acción para deshacerla (`historialAcciones.pop()`).
+
 ### Posibles Usos Futuros de Otras Estructuras de Datos:
 
-*   **`java.util.Stack` (Pila - LIFO)**:
-    *   Podría utilizarse para implementar una funcionalidad de "deshacer" acciones en la interfaz de usuario, o para el rastreo de rutas en algoritmos de navegación más complejos para los drones (por ejemplo, backtracking).
-
-*   **`java.util.Vector`**:
+*   **`java.util.Vector`:
     *   Si se necesitara una lista sincronizada (thread-safe) para la flota de drones o la cola de paquetes en un entorno multihilo, `Vector` podría ser una opción, aunque las colecciones concurrentes del paquete `java.util.concurrent` (como `CopyOnWriteArrayList` o `ConcurrentLinkedQueue`) suelen ser preferibles por su mejor rendimiento en escenarios de alta concurrencia.
 
-*   **Matrices (Arrays Multidimensionales)**:
-    *   Podrían usarse para representar un mapa o una grilla del área de entrega si se implementara una lógica de navegación más detallada, donde cada celda de la matriz represente una coordenada o zona.
-    *   También para optimizar la asignación de drones a zonas específicas o para calcular rutas óptimas (por ejemplo, en algoritmos como A*).
+4.  **Matrices (Arrays Multidimensionales `String[][]`)**:
+    *   **Uso**: En la clase `SistemaEntregas`, el atributo `mapaEntrega` es un `String[][]`.
+    *   **Propósito**: Se utiliza para representar un mapa conceptual del área de entrega en la consola. Cada celda de la matriz representa una posición en el mapa y contiene un símbolo que indica si hay una base, un drone disponible, un drone en entrega o un paquete pendiente.
+    *   **Operaciones Comunes**: Inicializar el mapa, limpiar el mapa, actualizar las celdas del mapa según el estado de los drones y paquetes.
 
 *   **`java.util.Map` (ej. `HashMap`, `TreeMap`)**:
     *   Para un acceso rápido a drones o paquetes por su ID. Por ejemplo, `Map<String, Drone>` permitiría buscar un drone específico por su `id` en tiempo O(1) en promedio con `HashMap`.
