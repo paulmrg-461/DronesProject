@@ -5,6 +5,8 @@ import dronesproject.model.MediumDrone;
 import dronesproject.model.HeavyDrone;
 import dronesproject.model.Paquete;
 import dronesproject.service.SistemaEntregas;
+import java.util.Scanner;
+import java.util.InputMismatchException;
 
 // Estructura de datos: java.util.Vector podría usarse para una lista sincronizada si es necesario.
 // Estructura de datos: java.util.Stack podría usarse para LIFO, por ejemplo, para deshacer acciones o rastrear rutas.
@@ -17,38 +19,124 @@ import dronesproject.service.SistemaEntregas;
  * Clase principal de la aplicación.
  */
 public class App {
+    private static SistemaEntregas sistemaEntregas = new SistemaEntregas();
+    private static Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
-        SistemaEntregas sistemaEntregas = new SistemaEntregas();
+        // Datos iniciales de ejemplo (opcional, se pueden quitar si se prefiere empezar desde cero)
+        cargarDatosIniciales();
 
-        // Crear y agregar drones a la flota
+        boolean salir = false;
+        while (!salir) {
+            mostrarMenu();
+            try {
+                int opcion = scanner.nextInt();
+                scanner.nextLine(); // Consumir nueva línea
+
+                switch (opcion) {
+                    case 1:
+                        agregarNuevoDrone();
+                        break;
+                    case 2:
+                        agregarNuevoPaquete();
+                        break;
+                    case 3:
+                        sistemaEntregas.procesarEntregas();
+                        break;
+                    case 4:
+                        sistemaEntregas.mostrarEstadoFlota();
+                        break;
+                    case 5:
+                        System.out.println("Saliendo del sistema...");
+                        salir = true;
+                        break;
+                    default:
+                        System.out.println("Opción no válida. Intente de nuevo.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada inválida. Por favor, ingrese un número.");
+                scanner.nextLine(); // Limpiar el buffer del scanner
+            }
+            System.out.println(); // Línea en blanco para mejor legibilidad
+        }
+        scanner.close();
+    }
+
+    private static void cargarDatosIniciales() {
         sistemaEntregas.agregarDrone(new LightDrone("LD001"));
         sistemaEntregas.agregarDrone(new MediumDrone("MD001"));
         sistemaEntregas.agregarDrone(new HeavyDrone("HD001"));
         sistemaEntregas.agregarDrone(new LightDrone("LD002"));
 
-        sistemaEntregas.mostrarEstadoFlota();
-
-        // Crear paquetes y agregarlos a la cola de entregas
         sistemaEntregas.agregarPedidoEntrega(new Paquete("P001", 3.5, "Calle Falsa 123"));
         sistemaEntregas.agregarPedidoEntrega(new Paquete("P002", 8.0, "Avenida Siempreviva 742"));
         sistemaEntregas.agregarPedidoEntrega(new Paquete("P003", 15.0, "Plaza Mayor 1"));
-        sistemaEntregas.agregarPedidoEntrega(new Paquete("P004", 1.0, "Calle Luna 24"));
-        sistemaEntregas.agregarPedidoEntrega(new Paquete("P005", 25.0, "Gran Vía 100")); // Este excederá la capacidad de todos
+    }
 
-        // Procesar las entregas
-        sistemaEntregas.procesarEntregas();
+    private static void mostrarMenu() {
+        System.out.println("--- Menú Sistema de Entregas de Drones ---");
+        System.out.println("1. Agregar Drone");
+        System.out.println("2. Agregar Paquete");
+        System.out.println("3. Procesar Entregas");
+        System.out.println("4. Mostrar Estado de la Flota");
+        System.out.println("5. Salir");
+        System.out.print("Seleccione una opción: ");
+    }
 
-        sistemaEntregas.mostrarEstadoFlota();
+    private static void agregarNuevoDrone() {
+        System.out.println("--- Agregar Nuevo Drone ---");
+        System.out.print("Ingrese ID del drone: ");
+        String id = scanner.nextLine();
+        System.out.println("Seleccione tipo de drone:");
+        System.out.println("1. Ligero (hasta 5kg)");
+        System.out.println("2. Mediano (hasta 10kg)");
+        System.out.println("3. Pesado (hasta 20kg)");
+        System.out.print("Opción: ");
+        try {
+            int tipo = scanner.nextInt();
+            scanner.nextLine(); // Consumir nueva línea
 
-        // Ejemplo de uso de Stack (Pila) - no directamente en la lógica de entrega principal aquí,
-        // pero podría usarse para un historial de comandos o rutas.
-        // java.util.Stack<String> historialOperaciones = new java.util.Stack<>();
-        // historialOperaciones.push("Drone LD001 despegó");
-        // historialOperaciones.push("Drone LD001 entregó P004");
-        // System.out.println("Última operación: " + historialOperaciones.pop());
+            switch (tipo) {
+                case 1:
+                    sistemaEntregas.agregarDrone(new LightDrone(id));
+                    break;
+                case 2:
+                    sistemaEntregas.agregarDrone(new MediumDrone(id));
+                    break;
+                case 3:
+                    sistemaEntregas.agregarDrone(new HeavyDrone(id));
+                    break;
+                default:
+                    System.out.println("Tipo de drone no válido.");
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("Entrada inválida para el tipo de drone. Debe ser un número.");
+            scanner.nextLine(); // Limpiar el buffer
+        }
+    }
 
-        // Ejemplo de uso de Matriz - podría ser para un mapa de celdas
-        // int[][] mapa = new int[10][10]; // Matriz de 10x10
-        // mapa[2][3] = 1; // Marcar celda (2,3) como visitada u obstáculo
+    private static void agregarNuevoPaquete() {
+        System.out.println("--- Agregar Nuevo Paquete ---");
+        System.out.print("Ingrese ID del paquete: ");
+        String id = scanner.nextLine();
+        double peso = 0;
+        boolean pesoValido = false;
+        while(!pesoValido) {
+            System.out.print("Ingrese peso del paquete (kg): ");
+            try {
+                peso = scanner.nextDouble();
+                scanner.nextLine(); // Consumir nueva línea
+                if (peso <= 0) {
+                    System.out.println("El peso debe ser un valor positivo.");
+                } else {
+                    pesoValido = true;
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada inválida para el peso. Debe ser un número.");
+                scanner.nextLine(); // Limpiar el buffer
+            }
+        }
+        System.out.print("Ingrese dirección de entrega: ");
+        String direccion = scanner.nextLine();
+        sistemaEntregas.agregarPedidoEntrega(new Paquete(id, peso, direccion));
     }
 }
