@@ -42,18 +42,61 @@ public class SistemaEntregas {
 
     private void inicializarMapaEntrega(int filas, int columnas) {
         this.mapaEntrega = new String[filas][columnas];
-        for (int i = 0; i < filas; i++) {
-            for (int j = 0; j < columnas; j++) {
+        limpiarMapa(); // Llama a limpiarMapa para inicializar con espacios vacíos
+    }
+
+    private void limpiarMapa() {
+        for (int i = 0; i < mapaEntrega.length; i++) {
+            for (int j = 0; j < mapaEntrega[i].length; j++) {
                 this.mapaEntrega[i][j] = "[ ]"; // Espacio vacío
             }
         }
-        // Ejemplo: Marcar algunas ubicaciones (conceptual)
-        if (filas > 0 && columnas > 0) this.mapaEntrega[0][0] = "[B]"; // Base
-        if (filas > 1 && columnas > 1) this.mapaEntrega[1][1] = "[P]"; // Punto de entrega
+    }
+
+    private void actualizarRepresentacionMapa() {
+        limpiarMapa(); // Limpia el mapa antes de actualizar
+
+        // 1. Marcar la Base
+        if (mapaEntrega.length > 0 && mapaEntrega[0].length > 0) {
+            mapaEntrega[0][0] = "[B]"; // Base en la esquina superior izquierda
+        }
+
+        // 2. Representar drones disponibles en la base (fila 0, junto a la base)
+        int dronesEnBaseCol = 1; // Columna para empezar a colocar drones en base
+        for (Drone drone : flotaDrones) {
+            if (drone.getPaqueteActual() == null) { // Drone disponible
+                if (mapaEntrega.length > 0 && dronesEnBaseCol < mapaEntrega[0].length) {
+                    mapaEntrega[0][dronesEnBaseCol] = "[D]"; // Drone disponible
+                    dronesEnBaseCol++;
+                }
+            }
+        }
+
+        // 3. Representar drones en entrega (fila 1)
+        int dronesEnEntregaCol = 0;
+        for (Drone drone : flotaDrones) {
+            if (drone.getPaqueteActual() != null) { // Drone con paquete
+                if (mapaEntrega.length > 1 && dronesEnEntregaCol < mapaEntrega[1].length) {
+                    mapaEntrega[1][dronesEnEntregaCol] = "[d]"; // Drone en entrega
+                    dronesEnEntregaCol++;
+                }
+            }
+        }
+
+        // 4. Representar paquetes pendientes en la cola (fila 2)
+        int paquetesPendientesCol = 0;
+        for (Paquete paquete : colaDeEntregas) {
+            if (mapaEntrega.length > 2 && paquetesPendientesCol < mapaEntrega[2].length) {
+                mapaEntrega[2][paquetesPendientesCol] = "[P]"; // Paquete pendiente
+                paquetesPendientesCol++;
+            }
+        }
     }
 
     public void mostrarMapaEntrega() {
-        System.out.println("\n--- Mapa de Entrega ---");
+        actualizarRepresentacionMapa(); // Actualiza el mapa antes de mostrarlo
+        System.out.println("\n--- Mapa de Entrega Conceptual ---");
+        System.out.println("Leyenda: [B]=Base, [D]=Drone Disponible, [d]=Drone en Entrega, [P]=Paquete Pendiente");
         for (int i = 0; i < mapaEntrega.length; i++) {
             for (int j = 0; j < mapaEntrega[i].length; j++) {
                 System.out.print(mapaEntrega[i][j] + " ");

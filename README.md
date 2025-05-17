@@ -111,3 +111,30 @@ El sistema utiliza las siguientes estructuras de datos de la Java Collections Fr
         ```
 
 Al ejecutar, se presentará un menú en la consola para interactuar con el sistema.
+
+## Mapa de Entrega Conceptual (Reactivo)
+
+El sistema incluye una representación visual conceptual del estado de las entregas a través de un mapa en la consola. Este mapa se actualiza dinámicamente para reflejar la ubicación y el estado de los drones y paquetes.
+
+### Representación en el Mapa:
+
+El mapa utiliza los siguientes símbolos para representar los diferentes elementos:
+
+*   `[B]`: Representa la **Base** de operaciones de los drones. Usualmente ubicada en la esquina superior izquierda del mapa (coordenada 0,0).
+*   `[D]`: Representa un **Drone Disponible** en la base, listo para una nueva asignación de entrega. Estos se muestran en la primera fila, a continuación de la base.
+*   `[d]`: Representa un **Drone en Entrega**, es decir, un drone que actualmente está transportando un paquete. Estos se muestran típicamente en la segunda fila del mapa.
+*   `[P]`: Representa un **Paquete Pendiente** en la cola de entregas, esperando ser asignado a un drone. Estos se muestran en la tercera fila del mapa.
+*   `[ ]`: Representa un espacio vacío en el mapa.
+
+### Funcionamiento:
+
+Cuando se selecciona la opción "Mostrar Mapa de Entrega" en el menú principal, el sistema:
+1.  Limpia la representación anterior del mapa.
+2.  Actualiza el mapa basándose en el estado actual de:
+    *   La ubicación de la base.
+    *   Los drones que están en la base y disponibles.
+    *   Los drones que están actualmente realizando una entrega.
+    *   Los paquetes que están en la cola esperando ser procesados.
+3.  Imprime el mapa actualizado en la consola junto con la leyenda de los símbolos.
+
+Esta funcionalidad permite tener una visión general y en tiempo real (conceptual) de la operación del sistema de entregas.
