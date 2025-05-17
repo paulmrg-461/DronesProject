@@ -13,6 +13,9 @@ import java.util.Queue;
 import java.util.Collection;
 import java.util.Stack; // Para la funcionalidad de deshacer
 import java.util.stream.Collectors; // Para convertir a Collection si es necesario
+import dronesproject.model.LightDrone;
+import dronesproject.model.MediumDrone;
+import dronesproject.model.HeavyDrone;
 
 /**
  * Clase que gestiona la lógica de negocio del sistema de entregas con drones.
@@ -245,49 +248,113 @@ public class SistemaEntregas {
 
     public void procesarEntregas() {
         System.out.println("\n--- Procesando Entregas ---");
+        Queue<Paquete> paquetesNoAsignadosTemporalmente = new LinkedList<>();
+
         while (!colaDeEntregas.isEmpty()) {
             Paquete paqueteAEntregar = colaDeEntregas.poll();
             System.out.println("Procesando: " + paqueteAEntregar);
 
-            boolean asignado = false;
-            Drone droneOptimo = null;
-            int menorDistancia = Integer.MAX_VALUE;
+            Drone droneAsignado = encontrarMejorDroneParaPaquete(paqueteAEntregar);
 
-            // Buscar el drone más cercano y adecuado
-            for (Drone drone : getFlotaDronesActiva()) {
-                if (drone.getPaqueteActual() == null && drone.getNivelBateria() > 20) { // Condición básica de disponibilidad
-                    if (drone.puedeCargar(paqueteAEntregar)) { // Verifica si el drone puede cargar este paquete específico
-                        int distancia = getDistancia(drone.getZonaActual(), paqueteAEntregar.getZonaDestino());
-                        if (distancia < menorDistancia) {
-                            menorDistancia = distancia;
-                            droneOptimo = drone;
+            if (droneAsignado != null) {
+                if (droneAsignado.cargarPaquete(paqueteAEntregar)) {
+                    int distancia = getDistancia(droneAsignado.getZonaActual(), paqueteAEntregar.getZonaDestino());
+                    System.out.println("Drone " + droneAsignado.getId() + " (" + droneAsignado.getClass().getSimpleName() + ", Zona: " + droneAsignado.getZonaActual() + ") asignado para paquete " + paqueteAEntregar.getId() + " (Zona Destino: " + paqueteAEntregar.getZonaDestino() + ", Distancia: " + distancia + " unidades).");
+                    droneAsignado.entregarPaquete();
+                } else {
+                    // Esto no debería suceder si encontrarMejorDroneParaPaquete y puedeCargar son consistentes
+                    System.out.println("Error: Drone " + droneAsignado.getId() + " no pudo cargar el paquete " + paqueteAEntregar.getId() + ". Paquete devuelto a la cola.");
+                    paquetesNoAsignadosTemporalmente.offer(paqueteAEntregar);
+                }
+            } else {
+                System.out.println("No hay drones disponibles o adecuados para " + paqueteAEntregar.getId() + " en este momento. Paquete devuelto a la cola.");
+                paquetesNoAsignadosTemporalmente.offer(paqueteAEntregar);
+            }
+        }
+        // Reintegrar paquetes no asignados a la cola principal para futuros intentos
+        while(!paquetesNoAsignadosTemporalmente.isEmpty()){
+            colaDeEntregas.offer(paquetesNoAsignadosTemporalmente.poll());
+        }
+
+        if (colaDeEntregas.isEmpty()) {
+            System.out.println("Todas las entregas procesadas.");
+        } else {
+            System.out.println(colaDeEntregas.size() + " paquete(s) no pudieron ser asignados y permanecen en la cola.");
+        }
+    }
+
+    private Drone encontrarMejorDroneParaPaquete(Paquete paquete) {
+        List<Drone> candidatos = new ArrayList<>();
+        double pesoPaquete = paquete.getPeso();
+
+        // 1. Buscar drone ideal en Zona.CENTRO
+        buscarCandidatos(paquete, Zona.CENTRO, true, candidatos);
+        if (!candidatos.isEmpty()) return seleccionarMejorCandidato(candidatos, paquete.getZonaDestino());
+
+        // 2. Buscar drone ideal en otras zonas
+        for (Zona zona : Zona.values()) {
+            if (zona != Zona.CENTRO) {
+                buscarCandidatos(paquete, zona, true, candidatos);
+            }
+        }
+        if (!candidatos.isEmpty()) return seleccionarMejorCandidato(candidatos, paquete.getZonaDestino());
+
+        // 3. Buscar cualquier drone capaz en Zona.CENTRO
+        buscarCandidatos(paquete, Zona.CENTRO, false, candidatos);
+        if (!candidatos.isEmpty()) return seleccionarMejorCandidato(candidatos, paquete.getZonaDestino());
+
+        // 4. Buscar cualquier drone capaz en otras zonas
+        for (Zona zona : Zona.values()) {
+            if (zona != Zona.CENTRO) {
+                buscarCandidatos(paquete, zona, false, candidatos);
+            }
+        }
+        if (!candidatos.isEmpty()) return seleccionarMejorCandidato(candidatos, paquete.getZonaDestino());
+
+        return null; // No se encontró ningún drone
+    }
+
+    private void buscarCandidatos(Paquete paquete, Zona zonaBusqueda, boolean soloIdeal, List<Drone> candidatos) {
+        double pesoPaquete = paquete.getPeso();
+        for (Drone drone : getFlotaDronesActiva()) {
+            if (drone.getPaqueteActual() == null && drone.getNivelBateria() > 20 && drone.getZonaActual() == zonaBusqueda) {
+                boolean esTipoIdeal = false;
+                if (pesoPaquete <= 5.0 && drone instanceof LightDrone) esTipoIdeal = true;
+                else if (pesoPaquete > 5.0 && pesoPaquete <= 10.0 && drone instanceof MediumDrone) esTipoIdeal = true;
+                else if (pesoPaquete > 10.0 && drone instanceof HeavyDrone) esTipoIdeal = true;
+
+                if (drone.puedeCargar(paquete)) {
+                    if (soloIdeal) {
+                        if (esTipoIdeal) {
+                            candidatos.add(drone);
                         }
+                    } else {
+                        candidatos.add(drone);
                     }
                 }
             }
+        }
+    }
 
-            if (droneOptimo != null) {
-                if (droneOptimo.cargarPaquete(paqueteAEntregar)) {
-                    System.out.println("Drone " + droneOptimo.getId() + " (Zona: " + droneOptimo.getZonaActual() + ") asignado para paquete " + paqueteAEntregar.getId() + " (Zona Destino: " + paqueteAEntregar.getZonaDestino() + ", Distancia: " + menorDistancia + " unidades).");
-                    droneOptimo.entregarPaquete(); // Simula la entrega
-                    // Actualizar la zona del drone a la zona del paquete después de la entrega
-                    // y simular consumo de batería basado en distancia si se desea una lógica más compleja.
-                    // Por ahora, la entrega actualiza la zona en el método entregarPaquete del drone si se implementa allí.
-                    // O se puede hacer aquí:
-                    // droneOptimo.setZonaActual(paqueteAEntregar.getZonaDestino()); 
-                    // droneOptimo.consumirBateriaPorDistancia(menorDistancia); // Método a implementar en Drone
-                    asignado = true;
+    private Drone seleccionarMejorCandidato(List<Drone> candidatos, Zona zonaDestinoPaquete) {
+        Drone mejorOpcion = null;
+        int menorDistancia = Integer.MAX_VALUE;
+        for (Drone candidato : candidatos) {
+            int distancia = getDistancia(candidato.getZonaActual(), zonaDestinoPaquete);
+            if (distancia < menorDistancia) {
+                menorDistancia = distancia;
+                mejorOpcion = candidato;
+            } else if (distancia == menorDistancia) {
+                // Criterio de desempate: preferir el que tiene más batería, o el de menor ID.
+                if (mejorOpcion != null && candidato.getNivelBateria() > mejorOpcion.getNivelBateria()) {
+                    mejorOpcion = candidato;
+                } else if (mejorOpcion != null && candidato.getNivelBateria() == mejorOpcion.getNivelBateria() && candidato.getId().compareTo(mejorOpcion.getId()) < 0){
+                    mejorOpcion = candidato;
                 }
             }
-            if (!asignado) {
-                System.out.println("No hay drones disponibles o adecuados para " + paqueteAEntregar.getId() + ". Paquete devuelto a la cola.");
-                colaDeEntregas.offer(paqueteAEntregar);
-                break; 
-            }
         }
-        if (colaDeEntregas.isEmpty()){
-            System.out.println("Todas las entregas procesadas.");
-        }
+        candidatos.clear(); // Limpiar para la siguiente búsqueda
+        return mejorOpcion;
     }
 
     public void mostrarEstadoFlota() {
