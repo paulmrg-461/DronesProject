@@ -5,8 +5,12 @@ package dronesproject.model;
  * Principio POO: Herencia - LightDrone es un tipo de Drone.
  */
 public class LightDrone extends Drone {
+    public LightDrone(String id, Zona zonaInicial) {
+        super(id, 5.0, zonaInicial);
+    }
+
     public LightDrone(String id) {
-        super(id, 5.0); // Capacidad de carga de 5kg
+        super(id, 5.0); // Llama al constructor de Drone que asigna Zona.CENTRO por defecto
     }
 
     // Principio POO: Polimorfismo - Implementación específica para LightDrone.

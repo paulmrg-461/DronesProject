@@ -5,8 +5,12 @@ package dronesproject.model;
  * Principio POO: Herencia - HeavyDrone es un tipo de Drone.
  */
 public class HeavyDrone extends Drone {
+    public HeavyDrone(String id, Zona zonaInicial) {
+        super(id, 20.0, zonaInicial);
+    }
+
     public HeavyDrone(String id) {
-        super(id, 20.0); // Capacidad de carga de 20kg
+        super(id, 20.0); // Llama al constructor de Drone que asigna Zona.CENTRO por defecto
     }
 
     // Principio POO: Polimorfismo - Implementación específica para HeavyDrone.

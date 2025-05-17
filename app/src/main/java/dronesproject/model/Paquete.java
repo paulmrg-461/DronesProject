@@ -11,12 +11,14 @@ public class Paquete {
     private String id;
     private double peso; // en kg
     private String direccionDestino;
+    private Zona zonaDestino;
 
     // Principio POO: Encapsulamiento - Constructor para inicializar el objeto Paquete.
-    public Paquete(String id, double peso, String direccionDestino) {
+    public Paquete(String id, double peso, String direccionDestino, Zona zonaDestino) {
         this.id = id;
         this.peso = peso;
         this.direccionDestino = direccionDestino;
+        this.zonaDestino = zonaDestino;
     }
 
     // Principio POO: Encapsulamiento - Getters para acceder a los atributos.
@@ -32,8 +34,12 @@ public class Paquete {
         return direccionDestino;
     }
 
+    public Zona getZonaDestino() {
+        return zonaDestino;
+    }
+
     @Override
     public String toString() {
-        return "Paquete{id='" + id + "', peso=" + peso + ", destino='" + direccionDestino + "'}";
+        return "Paquete{id='" + id + "', peso=" + peso + ", destino='" + direccionDestino + "', zona=" + zonaDestino + "'}";
     }
 }

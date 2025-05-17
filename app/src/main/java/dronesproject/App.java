@@ -4,6 +4,7 @@ import dronesproject.model.LightDrone;
 import dronesproject.model.MediumDrone;
 import dronesproject.model.HeavyDrone;
 import dronesproject.model.Paquete;
+import dronesproject.model.Zona;
 import dronesproject.service.SistemaEntregas;
 import java.util.Scanner;
 import java.util.InputMismatchException;
@@ -68,14 +69,17 @@ public class App {
     }
 
     private static void cargarDatosIniciales() {
-        sistemaEntregas.agregarDrone(new LightDrone("LD001"));
-        sistemaEntregas.agregarDrone(new MediumDrone("MD001"));
-        sistemaEntregas.agregarDrone(new HeavyDrone("HD001"));
-        sistemaEntregas.agregarDrone(new LightDrone("LD002"));
+        // Todos los drones inician en la base (CENTRO por defecto o especificado)
+        sistemaEntregas.agregarDrone(new LightDrone("LD001", Zona.CENTRO));
+        sistemaEntregas.agregarDrone(new LightDrone("LD002", Zona.CENTRO));
+        sistemaEntregas.agregarDrone(new MediumDrone("MD001", Zona.CENTRO));
+        sistemaEntregas.agregarDrone(new HeavyDrone("HD001", Zona.CENTRO));
 
-        sistemaEntregas.agregarPedidoEntrega(new Paquete("P001", 3.5, "Tv 7 51N 24"));
-        sistemaEntregas.agregarPedidoEntrega(new Paquete("P002", 8.0, "Avenida Siempreviva 742"));
-        sistemaEntregas.agregarPedidoEntrega(new Paquete("P003", 15.0, "Campanario local 17"));
+        sistemaEntregas.agregarPedidoEntrega(new Paquete("P001", 3.5, "Tv 7 51N 24", Zona.NORTE));
+        sistemaEntregas.agregarPedidoEntrega(new Paquete("P002", 4.5, "Tv 7 51N 26", Zona.NORTE));
+        sistemaEntregas.agregarPedidoEntrega(new Paquete("P003", 8.0, "Avenida Siempreviva 742", Zona.CENTRO));
+        sistemaEntregas.agregarPedidoEntrega(new Paquete("P004", 15.0, "Campanario local 17", Zona.SUR));
+        sistemaEntregas.agregarPedidoEntrega(new Paquete("P005", 20.0, "Campanario local 18", Zona.SUR));
     }
 
     private static void mostrarMenu() {
@@ -98,20 +102,45 @@ public class App {
         System.out.println("1. Ligero (hasta 5kg)");
         System.out.println("2. Mediano (hasta 10kg)");
         System.out.println("3. Pesado (hasta 20kg)");
-        System.out.print("Opción: ");
+        System.out.print("Opción de Tipo: ");
         try {
             int tipo = scanner.nextInt();
             scanner.nextLine(); // Consumir nueva línea
 
+            System.out.println("Seleccione Zona Inicial del Drone:");
+            Zona[] zonas = Zona.values();
+            for (int i = 0; i < zonas.length; i++) {
+                System.out.println((i + 1) + ". " + zonas[i]);
+            }
+            System.out.print("Opción de Zona: ");
+            Zona zonaSeleccionada = Zona.CENTRO; // Por defecto CENTRO si hay error
+            boolean zonaValida = false;
+            while(!zonaValida){
+                try {
+                    int opcionZona = scanner.nextInt();
+                    scanner.nextLine(); // Consumir nueva línea
+                    if (opcionZona > 0 && opcionZona <= zonas.length) {
+                        zonaSeleccionada = zonas[opcionZona - 1];
+                        zonaValida = true;
+                    } else {
+                        System.out.println("Opción de zona no válida. Intente de nuevo.");
+                    }
+                } catch (InputMismatchException e) {
+                    System.out.println("Entrada inválida para la zona. Debe ser un número. Se asignará CENTRO por defecto.");
+                    scanner.nextLine(); // Limpiar el buffer
+                    zonaValida = true; // Salir del bucle, se usa el defecto
+                }
+            }
+
             switch (tipo) {
                 case 1:
-                    sistemaEntregas.agregarDrone(new LightDrone(id));
+                    sistemaEntregas.agregarDrone(new LightDrone(id, zonaSeleccionada));
                     break;
                 case 2:
-                    sistemaEntregas.agregarDrone(new MediumDrone(id));
+                    sistemaEntregas.agregarDrone(new MediumDrone(id, zonaSeleccionada));
                     break;
                 case 3:
-                    sistemaEntregas.agregarDrone(new HeavyDrone(id));
+                    sistemaEntregas.agregarDrone(new HeavyDrone(id, zonaSeleccionada));
                     break;
                 default:
                     System.out.println("Tipo de drone no válido.");
@@ -145,6 +174,30 @@ public class App {
         }
         System.out.print("Ingrese dirección de entrega: ");
         String direccion = scanner.nextLine();
-        sistemaEntregas.agregarPedidoEntrega(new Paquete(id, peso, direccion));
+
+        System.out.println("Seleccione Zona de Destino:");
+        Zona[] zonas = Zona.values();
+        for (int i = 0; i < zonas.length; i++) {
+            System.out.println((i + 1) + ". " + zonas[i]);
+        }
+        System.out.print("Opción de Zona: ");
+        Zona zonaSeleccionada = null;
+        boolean zonaValida = false;
+        while(!zonaValida){
+            try {
+                int opcionZona = scanner.nextInt();
+                scanner.nextLine(); // Consumir nueva línea
+                if (opcionZona > 0 && opcionZona <= zonas.length) {
+                    zonaSeleccionada = zonas[opcionZona - 1];
+                    zonaValida = true;
+                } else {
+                    System.out.println("Opción de zona no válida. Intente de nuevo.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Entrada inválida para la zona. Debe ser un número.");
+                scanner.nextLine(); // Limpiar el buffer
+            }
+        }
+        sistemaEntregas.agregarPedidoEntrega(new Paquete(id, peso, direccion, zonaSeleccionada));
     }
 }

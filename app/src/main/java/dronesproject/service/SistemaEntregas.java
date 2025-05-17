@@ -2,17 +2,15 @@ package dronesproject.service;
 
 import dronesproject.model.Drone;
 import dronesproject.model.Paquete;
-import dronesproject.model.LightDrone;
-import dronesproject.model.MediumDrone;
-import dronesproject.model.HeavyDrone;
+import dronesproject.model.Zona;
 
 import java.util.TreeMap;
 import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ArrayList; // Importar ArrayList
+import java.util.ArrayList;
 import java.util.Queue;
-import java.util.Collection; // Para un tipo de retorno común
+import java.util.Collection;
 import java.util.Stack; // Para la funcionalidad de deshacer
 import java.util.stream.Collectors; // Para convertir a Collection si es necesario
 
@@ -35,7 +33,7 @@ public class SistemaEntregas {
     // Variable para seleccionar la implementación de la flota de drones
     // true: usa TreeMap (ordenado por ID, acceso logarítmico)
     // false: usa ArrayList (orden de inserción, búsqueda por ID lineal)
-    private boolean usarTreeMapParaFlota = true; // Cambiar a false para usar ArrayList
+    private boolean usarTreeMapParaFlota = false; // Cambiar a false para usar ArrayList
 
     private Map<String, Drone> flotaDronesMap;
     private List<Drone> flotaDronesList;
@@ -43,6 +41,7 @@ public class SistemaEntregas {
     private Queue<Paquete> colaDeEntregas;
     private Stack<AccionHistorial> historialAcciones; // Pila para deshacer
     private String[][] mapaEntrega; // Matriz para el mapa de entrega conceptual
+    private int[][] matrizDistancias; // Matriz de distancias entre zonas
 
     public SistemaEntregas() {
         if (usarTreeMapParaFlota) {
@@ -55,6 +54,56 @@ public class SistemaEntregas {
         this.colaDeEntregas = new LinkedList<>();
         this.historialAcciones = new Stack<>();
         inicializarMapaEntrega(5, 5); // Inicializar un mapa de 5x5 por defecto
+        inicializarMatrizDistancias();
+    }
+
+    private void inicializarMatrizDistancias() {
+        // Ejemplo de matriz de distancias (simulada)
+        // Filas y columnas corresponden al ordinal de la Zona (NORTE=0, SUR=1, etc.)
+        // Distancia de una zona a sí misma es 0.
+        // Estos valores deberían ser configurables o basados en datos reales.
+        int numZonas = Zona.values().length;
+        matrizDistancias = new int[numZonas][numZonas];
+        //       NORTE SUR ESTE OESTE CENTRO
+        // NORTE
+        matrizDistancias[Zona.NORTE.ordinal()][Zona.NORTE.ordinal()] = 0;
+        matrizDistancias[Zona.NORTE.ordinal()][Zona.SUR.ordinal()] = 10;
+        matrizDistancias[Zona.NORTE.ordinal()][Zona.ESTE.ordinal()] = 5;
+        matrizDistancias[Zona.NORTE.ordinal()][Zona.OESTE.ordinal()] = 7;
+        matrizDistancias[Zona.NORTE.ordinal()][Zona.CENTRO.ordinal()] = 3;
+        // SUR
+        matrizDistancias[Zona.SUR.ordinal()][Zona.NORTE.ordinal()] = 10;
+        matrizDistancias[Zona.SUR.ordinal()][Zona.SUR.ordinal()] = 0;
+        matrizDistancias[Zona.SUR.ordinal()][Zona.ESTE.ordinal()] = 8;
+        matrizDistancias[Zona.SUR.ordinal()][Zona.OESTE.ordinal()] = 6;
+        matrizDistancias[Zona.SUR.ordinal()][Zona.CENTRO.ordinal()] = 4;
+        // ESTE
+        matrizDistancias[Zona.ESTE.ordinal()][Zona.NORTE.ordinal()] = 5;
+        matrizDistancias[Zona.ESTE.ordinal()][Zona.SUR.ordinal()] = 8;
+        matrizDistancias[Zona.ESTE.ordinal()][Zona.ESTE.ordinal()] = 0;
+        matrizDistancias[Zona.ESTE.ordinal()][Zona.OESTE.ordinal()] = 12;
+        matrizDistancias[Zona.ESTE.ordinal()][Zona.CENTRO.ordinal()] = 2;
+        // OESTE
+        matrizDistancias[Zona.OESTE.ordinal()][Zona.NORTE.ordinal()] = 7;
+        matrizDistancias[Zona.OESTE.ordinal()][Zona.SUR.ordinal()] = 6;
+        matrizDistancias[Zona.OESTE.ordinal()][Zona.ESTE.ordinal()] = 12;
+        matrizDistancias[Zona.OESTE.ordinal()][Zona.OESTE.ordinal()] = 0;
+        matrizDistancias[Zona.OESTE.ordinal()][Zona.CENTRO.ordinal()] = 5;
+        // CENTRO
+        matrizDistancias[Zona.CENTRO.ordinal()][Zona.NORTE.ordinal()] = 3;
+        matrizDistancias[Zona.CENTRO.ordinal()][Zona.SUR.ordinal()] = 4;
+        matrizDistancias[Zona.CENTRO.ordinal()][Zona.ESTE.ordinal()] = 2;
+        matrizDistancias[Zona.CENTRO.ordinal()][Zona.OESTE.ordinal()] = 5;
+        matrizDistancias[Zona.CENTRO.ordinal()][Zona.CENTRO.ordinal()] = 0;
+    }
+
+    public int getDistancia(Zona origen, Zona destino) {
+        if (origen == null || destino == null) {
+            // Considerar un valor alto o manejar el error según la lógica de negocio
+            System.out.println("Advertencia: Zona de origen o destino es nula al calcular distancia.");
+            return Integer.MAX_VALUE; 
+        }
+        return matrizDistancias[origen.ordinal()][destino.ordinal()];
     }
 
     // Método helper para obtener la colección de drones activa
@@ -201,13 +250,33 @@ public class SistemaEntregas {
             System.out.println("Procesando: " + paqueteAEntregar);
 
             boolean asignado = false;
+            Drone droneOptimo = null;
+            int menorDistancia = Integer.MAX_VALUE;
+
+            // Buscar el drone más cercano y adecuado
             for (Drone drone : getFlotaDronesActiva()) {
-                if (drone.getPaqueteActual() == null && drone.getNivelBateria() > 20) {
-                    if (drone.cargarPaquete(paqueteAEntregar)) {
-                        drone.entregarPaquete();
-                        asignado = true;
-                        break;
+                if (drone.getPaqueteActual() == null && drone.getNivelBateria() > 20) { // Condición básica de disponibilidad
+                    if (drone.puedeCargar(paqueteAEntregar)) { // Verifica si el drone puede cargar este paquete específico
+                        int distancia = getDistancia(drone.getZonaActual(), paqueteAEntregar.getZonaDestino());
+                        if (distancia < menorDistancia) {
+                            menorDistancia = distancia;
+                            droneOptimo = drone;
+                        }
                     }
+                }
+            }
+
+            if (droneOptimo != null) {
+                if (droneOptimo.cargarPaquete(paqueteAEntregar)) {
+                    System.out.println("Drone " + droneOptimo.getId() + " (Zona: " + droneOptimo.getZonaActual() + ") asignado para paquete " + paqueteAEntregar.getId() + " (Zona Destino: " + paqueteAEntregar.getZonaDestino() + ", Distancia: " + menorDistancia + " unidades).");
+                    droneOptimo.entregarPaquete(); // Simula la entrega
+                    // Actualizar la zona del drone a la zona del paquete después de la entrega
+                    // y simular consumo de batería basado en distancia si se desea una lógica más compleja.
+                    // Por ahora, la entrega actualiza la zona en el método entregarPaquete del drone si se implementa allí.
+                    // O se puede hacer aquí:
+                    // droneOptimo.setZonaActual(paqueteAEntregar.getZonaDestino()); 
+                    // droneOptimo.consumirBateriaPorDistancia(menorDistancia); // Método a implementar en Drone
+                    asignado = true;
                 }
             }
             if (!asignado) {
@@ -260,7 +329,4 @@ public class SistemaEntregas {
                 break;
         }
     }
-
-    // El método main se moverá a la clase App principal del paquete dronesproject
-    // public static void main(String[] args) { ... }
 }

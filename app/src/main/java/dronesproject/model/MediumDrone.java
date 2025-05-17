@@ -5,8 +5,12 @@ package dronesproject.model;
  * Principio POO: Herencia - MediumDrone es un tipo de Drone.
  */
 public class MediumDrone extends Drone {
+    public MediumDrone(String id, Zona zonaInicial) {
+        super(id, 10.0, zonaInicial);
+    }
+
     public MediumDrone(String id) {
-        super(id, 10.0); // Capacidad de carga de 10kg
+        super(id, 10.0); // Llama al constructor de Drone que asigna Zona.CENTRO por defecto
     }
 
     // Principio POO: Polimorfismo - Implementación específica para MediumDrone.
