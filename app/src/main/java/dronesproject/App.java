@@ -46,6 +46,12 @@ public class App {
                         sistemaEntregas.mostrarEstadoFlota();
                         break;
                     case 5:
+                        sistemaEntregas.mostrarMapaEntrega(); // Nueva opción
+                        break;
+                    case 6:
+                        sistemaEntregas.deshacerUltimaAccion(); // Nueva opción
+                        break;
+                    case 7:
                         System.out.println("Saliendo del sistema...");
                         salir = true;
                         break;
@@ -67,9 +73,9 @@ public class App {
         sistemaEntregas.agregarDrone(new HeavyDrone("HD001"));
         sistemaEntregas.agregarDrone(new LightDrone("LD002"));
 
-        sistemaEntregas.agregarPedidoEntrega(new Paquete("P001", 3.5, "Calle Falsa 123"));
+        sistemaEntregas.agregarPedidoEntrega(new Paquete("P001", 3.5, "Tv 7 51N 24"));
         sistemaEntregas.agregarPedidoEntrega(new Paquete("P002", 8.0, "Avenida Siempreviva 742"));
-        sistemaEntregas.agregarPedidoEntrega(new Paquete("P003", 15.0, "Plaza Mayor 1"));
+        sistemaEntregas.agregarPedidoEntrega(new Paquete("P003", 15.0, "Campanario local 17"));
     }
 
     private static void mostrarMenu() {
@@ -78,7 +84,9 @@ public class App {
         System.out.println("2. Agregar Paquete");
         System.out.println("3. Procesar Entregas");
         System.out.println("4. Mostrar Estado de la Flota");
-        System.out.println("5. Salir");
+        System.out.println("5. Mostrar Mapa de Entrega"); // Nueva opción
+        System.out.println("6. Deshacer Última Acción"); // Nueva opción
+        System.out.println("7. Salir");
         System.out.print("Seleccione una opción: ");
     }
 
