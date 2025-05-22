@@ -9,6 +9,7 @@ import dronesproject.service.SistemaEntregas;
 import java.util.Scanner;
 import java.util.InputMismatchException;
 
+// tenemos la clase principal que vendria siendo la interfaz de usuario, que nos permite interactuar con el sistema de entregas
 // Estructura de datos: java.util.Vector podría usarse para una lista sincronizada si es necesario.
 // Estructura de datos: java.util.Stack podría usarse para LIFO, por ejemplo, para deshacer acciones o rastrear rutas.
 
@@ -20,8 +21,8 @@ import java.util.InputMismatchException;
  * Clase principal de la aplicación.
  */
 public class App {
-    private static SistemaEntregas sistemaEntregas = new SistemaEntregas();
-    private static Scanner scanner = new Scanner(System.in);
+    private static final SistemaEntregas sistemaEntregas = new SistemaEntregas();
+    private static final Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
         // Datos iniciales de ejemplo (opcional, se pueden quitar si se prefiere empezar desde cero)
         cargarDatosIniciales();
@@ -40,8 +41,9 @@ public class App {
                     case 2:
                         agregarNuevoPaquete();
                         break;
-                    case 3:
-                        sistemaEntregas.procesarEntregas();
+                    case 3: 
+                        // llamado a funciones principales desde la clase SistemaEntregas
+                        sistemaEntregas.procesarEntregas(); 
                         break;
                     case 4:
                         sistemaEntregas.mostrarEstadoFlota();
@@ -134,7 +136,7 @@ public class App {
                     zonaValida = true; // Salir del bucle, se usa el defecto
                 }
             }
-
+            // aqui tenemos la logica para interactuar con el sistema de entregas que es la logica del negocio, dependiendo las acciones del usuario
             switch (tipo) {
                 case 1:
                     sistemaEntregas.agregarDrone(new LightDrone(id, zonaSeleccionada));

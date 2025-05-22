@@ -1,27 +1,33 @@
 package dronesproject.service;
 
+// modelos propios
 import dronesproject.model.Drone;
 import dronesproject.model.Paquete;
 import dronesproject.model.Zona;
-
-import java.util.TreeMap;
-import java.util.Map;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Queue;
-import java.util.Collection;
-import java.util.Stack; // Para la funcionalidad de deshacer
-import java.util.stream.Collectors; // Para convertir a Collection si es necesario
 import dronesproject.model.LightDrone;
 import dronesproject.model.MediumDrone;
 import dronesproject.model.HeavyDrone;
+// librerias de Java
+// mapas
+import java.util.TreeMap; 
+import java.util.Map;
+// colas
+import java.util.Queue;
+import java.util.LinkedList;
+// listas
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
+// pilas
+import java.util.Stack; // Para la funcionalidad de deshacer
+
 
 /**
  * Clase que gestiona la lógica de negocio del sistema de entregas con drones.
  */
 public class SistemaEntregas {
     // Clase interna para representar una acción en el historial para deshacer
+    // Se usa una pila para almacenar las acciones en orden LIFO (última en entrar, primera en salir)
     private static class AccionHistorial {
         enum TipoAccion { DRONE_AGREGADO, PAQUETE_AGREGADO }
         TipoAccion tipo;
@@ -36,13 +42,12 @@ public class SistemaEntregas {
     // Variable para seleccionar la implementación de la flota de drones
     // true: usa TreeMap (ordenado por ID, acceso logarítmico)
     // false: usa ArrayList (orden de inserción, búsqueda por ID lineal)
-    private boolean usarTreeMapParaFlota = false; // Cambiar a false para usar ArrayList
-
-    private Map<String, Drone> flotaDronesMap;
-    private List<Drone> flotaDronesList;
-
-    private Queue<Paquete> colaDeEntregas;
-    private Stack<AccionHistorial> historialAcciones; // Pila para deshacer
+    private final boolean usarTreeMapParaFlota = true; // Cambiar a false para usar ArrayList
+    private final Map<String, Drone> flotaDronesMap;
+    private final List<Drone> flotaDronesList;
+    // el final no permite cambiar la referencia, pero sí el contenido
+    private final Queue<Paquete> colaDeEntregas;
+    private final Stack<AccionHistorial> historialAcciones; // Pila para deshacer
     private String[][] mapaEntrega; // Matriz para el mapa de entrega conceptual
     private int[][] matrizDistancias; // Matriz de distancias entre zonas
 
@@ -111,10 +116,15 @@ public class SistemaEntregas {
 
     // Método helper para obtener la colección de drones activa
     private Collection<Drone> getFlotaDronesActiva() {
+        // operador ternario para reemplazar if else
+        // Si usarTreeMapParaFlota es true, devuelve los valores del TreeMap
+        // Si es false, devuelve la lista de drones
         return usarTreeMapParaFlota ? flotaDronesMap.values() : flotaDronesList;
     }
 
     // Método helper para obtener un drone por ID de la colección activa
+    // Se usa para evitar duplicar la lógica de búsqueda
+    // Se asume que el ID es único para cada drone
     private Drone getDronePorId(String id) {
         if (usarTreeMapParaFlota) {
             return flotaDronesMap.get(id);
@@ -204,11 +214,12 @@ public class SistemaEntregas {
             }
         }
     }
-
+    // Metodo para mostar la matriz de mapa de entrega
     public void mostrarMapaEntrega() {
         actualizarRepresentacionMapa(); // Actualiza el mapa antes de mostrarlo
         System.out.println("\n--- Mapa de Entrega Conceptual ---");
         System.out.println("Leyenda: [B]=Base, [D]=Drone Disponible, [d]=Drone en Entrega, [P]=Paquete Pendiente");
+        // recorrido matriz dos dimensiones 
         for (int i = 0; i < mapaEntrega.length; i++) {
             for (int j = 0; j < mapaEntrega[i].length; j++) {
                 System.out.print(mapaEntrega[i][j] + " ");
@@ -239,18 +250,19 @@ public class SistemaEntregas {
         this.historialAcciones.push(new AccionHistorial(AccionHistorial.TipoAccion.DRONE_AGREGADO, drone));
         System.out.println(drone.getClass().getSimpleName() + " " + drone.getId() + " agregado a la flota.");
     }
-
+    // este metodo es para agregara un paquete a la cola de entregas fifo
     public void agregarPedidoEntrega(Paquete paquete) {
         this.colaDeEntregas.offer(paquete);
         this.historialAcciones.push(new AccionHistorial(AccionHistorial.TipoAccion.PAQUETE_AGREGADO, paquete));
         System.out.println("Pedido para " + paquete + " agregado a la cola de entregas.");
     }
-
+    // este metodo principal es para procesar los paquetes en la cola de entregas
     public void procesarEntregas() {
         System.out.println("\n--- Procesando Entregas ---");
         Queue<Paquete> paquetesNoAsignadosTemporalmente = new LinkedList<>();
-
+        //  verificar si la cola de entregas no esta vacia
         while (!colaDeEntregas.isEmpty()) {
+            // Sacar el paquete de la cola
             Paquete paqueteAEntregar = colaDeEntregas.poll();
             System.out.println("Procesando: " + paqueteAEntregar);
 
@@ -282,7 +294,7 @@ public class SistemaEntregas {
             System.out.println(colaDeEntregas.size() + " paquete(s) no pudieron ser asignados y permanecen en la cola.");
         }
     }
-
+    // estas son funciones auxiliares de procesarEntregas esta es para encotrnar el mejor drone para un paquete
     private Drone encontrarMejorDroneParaPaquete(Paquete paquete) {
         List<Drone> candidatos = new ArrayList<>();
         double pesoPaquete = paquete.getPeso();
@@ -313,7 +325,7 @@ public class SistemaEntregas {
 
         return null; // No se encontró ningún drone
     }
-
+    // esta es otra funcion auxiliar para buscar candidatos
     private void buscarCandidatos(Paquete paquete, Zona zonaBusqueda, boolean soloIdeal, List<Drone> candidatos) {
         double pesoPaquete = paquete.getPeso();
         for (Drone drone : getFlotaDronesActiva()) {
@@ -335,7 +347,8 @@ public class SistemaEntregas {
             }
         }
     }
-
+    // esta es otra funcion auxiliar para seleccionar el mejor candidato
+    // esta funcion selecciona el mejor candidato de la lista de candidatos
     private Drone seleccionarMejorCandidato(List<Drone> candidatos, Zona zonaDestinoPaquete) {
         Drone mejorOpcion = null;
         int menorDistancia = Integer.MAX_VALUE;
@@ -356,7 +369,7 @@ public class SistemaEntregas {
         candidatos.clear(); // Limpiar para la siguiente búsqueda
         return mejorOpcion;
     }
-
+    // este metodo es para mostrar el estado de la flota de drones
     public void mostrarEstadoFlota() {
         System.out.println("\n--- Estado de los Drones ---");
         if (isFlotaVacia()) {
@@ -368,6 +381,7 @@ public class SistemaEntregas {
         }
     }
 
+    // esta es la pila para deshacer la ultima accion (ultimo Drone agregado o paquete agregado)
     public void deshacerUltimaAccion() {
         if (historialAcciones.isEmpty()) {
             System.out.println("No hay acciones para deshacer.");
